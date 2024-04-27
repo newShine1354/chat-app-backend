@@ -1,11 +1,16 @@
 import { messageModel } from "../model/messageModel.js";
 import { conversationModel } from "../model/conversationModel.js";
+import { userModel } from "../model/userModel.js";
 
 const sendMessage = async (req, res) => {
   try {
     const { id: receiverId } = req.params;
-    const { message } = req.body;
-    const senderId = req.user._id;
+    // Authentication flow
+    // const { message } = req.body;
+    // const senderId = req.user._id;
+
+    // Without Authentication flow
+    const { message, senderId } = req.body;
 
     let conversation = await conversationModel.findOne({
       participants: { $all: [senderId, receiverId] },
@@ -39,21 +44,25 @@ const sendMessage = async (req, res) => {
 
 const getMessages = async (req, res) => {
   try {
-    const { id: userToChatId } = req.params;
-    const senderId = req.user._id;
+    // Authentication Flow
+    // const { id: userToChatId } = req.params;
+    // const senderId = req.user._id;
+
+    // Without Authentication
+    const { senderId, userToChatId } = req.body;
+
     const conversation = await conversationModel
       .findOne({
         participants: { $all: [senderId, userToChatId] },
       })
-      .populate("messages"); // NOR REFERENCE
-
+      .populate("messages"); // messageData instead of messageId.
     if (!conversation) {
       return res.status(200).send([]);
     }
 
     res.status(200).send({
       message: "Messages fetched successfully.",
-      messages: conversation.messages,
+      messages: conversation.messages || [],
       success: true,
     });
   } catch (error) {

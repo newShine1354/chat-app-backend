@@ -28,15 +28,17 @@ const signup = async (req, res) => {
 
     generateToken(newUser._id, res);
     res.status(200).send({
-      message: "Users registered Successfully.",
+      message: "User registered Successfully.",
       userData: {
         _id: newUser._id,
-        fullName,
+        fullName: fullName,
         username,
         gender,
+        profilePic: newUser.profilePic,
       },
       success: true,
     });
+    console.log("hlo");
   } catch (error) {
     return res.status(500).send({ message: error.message, success: false });
   }
@@ -44,19 +46,18 @@ const signup = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
-
     const user = await userModel.findOne({ username });
     const isPasswordCorrect = await bcrypt.compare(
       password,
       user?.password || ""
     );
     if (!user) {
-      res
+      return res
         .status(404)
         .send({ message: "Please register first.", success: false });
     }
     if (!isPasswordCorrect) {
-      res
+      return res
         .status(400)
         .send({ message: "Enter valid password.", success: false });
     }
@@ -68,6 +69,7 @@ const login = async (req, res) => {
         fullName: user.fullName,
         username: user.username,
         gender: user.gender,
+        profilePic: user.profilePic,
       },
       success: true,
     });
