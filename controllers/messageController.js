@@ -7,11 +7,8 @@ const sendMessage = async (req, res) => {
   try {
     const { id: receiverId } = req.params;
     // Authentication flow
-    // const { message } = req.body;
-    // const senderId = req.user._id;
-
-    // Without Authentication flow
-    const { message, senderId } = req.body;
+    const { message } = req.body;
+    const senderId = req.user._id;
 
     let conversation = await conversationModel.findOne({
       participants: { $all: [senderId, receiverId] },
@@ -36,7 +33,7 @@ const sendMessage = async (req, res) => {
 
     const recieverSocketId = getRecieverSocketId(receiverId);
     if (recieverSocketId) {
-      io.to(recieverSocketId).emit("newMessage", newMessage)
+      io.to(recieverSocketId).emit("newMessage", newMessage);
     }
 
     res.status(201).send({
@@ -51,12 +48,8 @@ const sendMessage = async (req, res) => {
 
 const getMessages = async (req, res) => {
   try {
-    // Authentication Flow
-    // const { id: userToChatId } = req.params;
-    // const senderId = req.user._id;
-
-    // Without Authentication
-    const { senderId, userToChatId } = req.body;
+    const { id: userToChatId } = req.params;
+    const senderId = req.user._id;
 
     const conversation = await conversationModel
       .findOne({

@@ -1,6 +1,6 @@
 import { userModel } from "../model/userModel.js";
 import bcrypt from "bcrypt";
-import generateToken from "../utils/generateToken.js";
+import jwt from "jsonwebtoken";
 
 const signup = async (req, res) => {
   try {
@@ -26,7 +26,9 @@ const signup = async (req, res) => {
       profilePic: gender === "male" ? boyProfilePic : girlProfilePic,
     });
 
-    generateToken(newUser._id, res);
+    const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, {
+      expiresIn: "15d",
+    });
     res.status(200).send({
       message: "User registered Successfully.",
       userData: {
@@ -36,9 +38,9 @@ const signup = async (req, res) => {
         gender,
         profilePic: newUser.profilePic,
       },
+      token,
       success: true,
     });
-    console.log("hlo");
   } catch (error) {
     return res.status(500).send({ message: error.message, success: false });
   }
@@ -61,7 +63,9 @@ const login = async (req, res) => {
         .status(400)
         .send({ message: "Enter valid password.", success: false });
     }
-    generateToken(user._id, res);
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "15d",
+    });
     res.status(200).send({
       message: "Logined successfully!!!",
       userData: {
@@ -71,6 +75,7 @@ const login = async (req, res) => {
         gender: user.gender,
         profilePic: user.profilePic,
       },
+      token,
       success: true,
     });
   } catch (error) {
@@ -88,4 +93,28 @@ const logout = async (req, res) => {
   }
 };
 
-export { signup, login, logout };
+const me = async (req, res) => {
+  try {
+    const id = req.user._id;
+    const user = await userModel.findById(id);
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "15d",
+    });
+    res.status(200).send({
+      message: "Logined successfully!!!",
+      userData: {
+        _id: user._id,
+        fullName: user.fullName,
+        username: user.username,  
+        gender: user.gender,
+        profilePic: user.profilePic,
+      },
+      token,
+      success: true,
+    });
+  } catch (error) {
+    return res.status(500).send({ message: error.message, success: false });
+  }
+};
+
+export { signup, login, logout, me };

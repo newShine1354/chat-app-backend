@@ -2,12 +2,9 @@ import { userModel } from "../model/userModel.js";
 
 const getUserForSideBar = async (req, res) => {
   try {
-    // Authentication flow
-    // const loggedInUserId = req.user._id;
+    const loggedInUserId = req.user._id;
 
-    // Without Authentication flow
-    const { id } = req.params;
-    const user = await userModel.findById(id);
+    const user = await userModel.findById(loggedInUserId);
     if (!user) {
       return res
         .status(404)
@@ -15,7 +12,7 @@ const getUserForSideBar = async (req, res) => {
     }
     const filteredUsers = await userModel
       .find({
-        _id: { $ne: id },
+        _id: { $ne: loggedInUserId },
       })
       .select("-password");
 
